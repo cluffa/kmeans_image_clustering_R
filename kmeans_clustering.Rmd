@@ -1,0 +1,174 @@
+---
+title: "k-means Clustering of Clothing types"
+output:
+  github_document: default
+  html_notebook: default
+---
+```{r setup}
+knitr::opts_chunk$set(cache = TRUE)
+set.seed(1)
+library(tidyverse)
+library(GGally)
+```
+
+```{r}
+train <- read.csv('./fashion-mnist_train.csv')
+label <- train[1]
+images <- as.matrix(train[-1])/255
+remove(train)
+```
+
+```{r}
+label_map <- data.frame(
+  label = 0:9,
+  group = c(
+    'T-shirt/top',
+    'Trouser',
+    'Pullover',
+    'Dress',
+    'Coat',
+    'Sandal',
+    'Shirt',
+    'Sneaker',
+    'Bag',
+    'Ankle boot'),
+  group2 = c(
+    'top',
+    'bottom',
+    'top',
+    'top',
+    'top',
+    'shoe',
+    'top',
+    'shoe',
+    'bag',
+    'shoe')
+)
+```
+
+```{r fig.height=2, fig.width=8}
+print_img <- function(n, data = images, asp = 1) {
+  for (i in n) {
+    image(matrix(data[i,ncol(data):1], nrow = 28),
+          col = gray.colors(10, 1, 0), asp = asp,
+          xaxt = "n", yaxt = "n")
+  }
+}
+
+ratio <- 5*c(2,8)
+par(mfrow = ratio, mar = rep(0, 4))
+N <- dim(images)[1]
+print_img(sample(1:N, prod(ratio)))
+```
+
+A reasonable goal would be to cluster this into at least 4 groups. Which could ideally be shoes, tops, bottoms, and bags.
+
+```{r}
+centers <- 10
+kmeans <- kmeans(images, centers, 100000)
+```
+
+```{r fig.height=1, fig.width=8, message=FALSE}
+ratio <- 3*c(1, 8)
+par(mfrow = ratio, mar = rep(0, 4))
+
+index <- 1:N
+for (n in 1:centers) {
+  print(paste('cluster',n))
+  print_img(sample(index[kmeans$cluster == n],prod(ratio)))
+}
+```
+
+```{r}
+results <- data.frame(index = 1:N, cluster = kmeans$cluster, label = label) %>% 
+  left_join(label_map)
+
+results %>% 
+  ggplot(aes(cluster, fill = group)) +
+    geom_bar(position="stack")
+
+results %>% 
+  ggplot(aes(cluster, fill = group2)) +
+    geom_bar(position="stack")
+```
+
+There is still too much clustering based on brightness. To get any good separation based on item type, it needs around 10-20 clusters. Then there are multiple clusters for 1 type but in different shades.
+
+
+Trying to normalize doesn't have the desired effect on darkness. 
+```{r}
+images_normal <- wordspace::normalize.rows(images)
+ratio <- 5*c(3,5)
+par(mfrow = ratio, mar = rep(0, 4))
+print_img(sample(1:N, prod(ratio)), images_normal)
+```
+
+The outline could also be used to identify item type. I will try once with just the outline and another with both.
+
+```{r}
+outline <- matrix(as.numeric(images > 0), nrow = N)
+images_outline <- cbind(images, outline)
+ratio <- 4*c(1.5,5)
+par(mfrow = ratio, mar = rep(0, 4))
+print_img(sample(1:N, prod(ratio)), images_outline, 2)
+```
+
+```{r}
+centers <- 10
+kmeans_justoutline <- kmeans(outline, centers, 100000)
+kmeans_both <- kmeans(images_outline, centers, 100000)
+
+```
+
+Just outline
+```{r fig.height=1, fig.width=8}
+ratio <- 3*c(1, 8)
+par(mfrow = ratio, mar = rep(0, 4))
+
+index <- 1:N
+for (n in 1:centers) {
+  print(paste('cluster',n))
+  print_img(sample(index[kmeans_justoutline$cluster == n],prod(ratio)))
+}
+```
+
+```{r}
+results_outline <- data.frame(index = 1:N, cluster = kmeans_justoutline$cluster, label = label) %>% 
+  left_join(label_map)
+
+results_outline %>% 
+  ggplot(aes(cluster, fill = group)) +
+    geom_bar(position="stack") + 
+    labs(title = 'Clustering with just the outline')
+
+results_outline %>% 
+  ggplot(aes(cluster, fill = group2)) +
+    geom_bar(position="stack") + 
+    labs(title = 'Clustering with just the outline')
+```
+
+Outline and picture
+```{r fig.height=1, fig.width=8}
+par(mfrow = ratio, mar = rep(0, 4))
+for (n in 1:centers) {
+  print(paste('cluster',n))
+  print_img(sample(index[kmeans_both$cluster == n],prod(ratio)))
+}
+```
+
+```{r}
+results_both <- data.frame(index = 1:N, cluster = kmeans_both$cluster, label = label) %>% 
+  left_join(label_map)
+
+results_both %>% 
+  ggplot(aes(cluster, fill = group)) +
+    geom_bar(position="stack") + 
+    labs(title = 'Clustering with image and outline')
+
+results_both %>% 
+  ggplot(aes(cluster, fill = group2)) +
+    geom_bar(position="stack") + 
+    labs(title = 'Clustering with image and outline')
+```
+
+The outline did surprisingly with the larger categories here.
