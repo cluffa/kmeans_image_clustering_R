@@ -1,6 +1,8 @@
 k-means Clustering of Clothing types
 ================
 
+[Fashion mnist dataset by Zalando Research on Kaggle](https://www.kaggle.com/zalando-research/fashionmnist)
+
 ``` r
 knitr::opts_chunk$set(cache = TRUE)
 set.seed(1)
