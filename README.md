@@ -348,4 +348,4 @@ results_outline %>%
 
 ![](kmeans_clustering_files/figure-gfm/unnamed-chunk-11-2.png)<!-- -->
 
-The outline did surprisingly with the larger categories here.
+The outline did surprisingly well with the larger categories. The kmeans model seems to be limited in complexity. It is unable to cluster based on the 10 categories in the original dataset, but it was able to identify similar shapes.
