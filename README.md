@@ -177,8 +177,7 @@ print_img(sample(1:N, prod(ratio)), images_normal)
 
 ![](kmeans_clustering_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
-The outline could also be used to identify item type. I will try once
-with just the outline and another with both.
+The outline could also be used to identify item type. I will fit and evaluate the model again with both and with only the outline.
 
 ``` r
 outline <- matrix(as.numeric(images > 0), nrow = N)
@@ -195,6 +194,81 @@ centers <- 10
 kmeans_justoutline <- kmeans(outline, centers, 100000)
 kmeans_both <- kmeans(images_outline, centers, 100000)
 ```
+
+Outline and picture
+
+``` r
+par(mfrow = ratio, mar = rep(0, 4))
+for (n in 1:centers) {
+  print(paste('cluster',n))
+  print_img(sample(index[kmeans_both$cluster == n],prod(ratio)))
+}
+```
+
+    ## [1] "cluster 1"
+
+![](kmeans_clustering_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+
+    ## [1] "cluster 2"
+
+![](kmeans_clustering_files/figure-gfm/unnamed-chunk-12-2.png)<!-- -->
+
+    ## [1] "cluster 3"
+
+![](kmeans_clustering_files/figure-gfm/unnamed-chunk-12-3.png)<!-- -->
+
+    ## [1] "cluster 4"
+
+![](kmeans_clustering_files/figure-gfm/unnamed-chunk-12-4.png)<!-- -->
+
+    ## [1] "cluster 5"
+
+![](kmeans_clustering_files/figure-gfm/unnamed-chunk-12-5.png)<!-- -->
+
+    ## [1] "cluster 6"
+
+![](kmeans_clustering_files/figure-gfm/unnamed-chunk-12-6.png)<!-- -->
+
+    ## [1] "cluster 7"
+
+![](kmeans_clustering_files/figure-gfm/unnamed-chunk-12-7.png)<!-- -->
+
+    ## [1] "cluster 8"
+
+![](kmeans_clustering_files/figure-gfm/unnamed-chunk-12-8.png)<!-- -->
+
+    ## [1] "cluster 9"
+
+![](kmeans_clustering_files/figure-gfm/unnamed-chunk-12-9.png)<!-- -->
+
+    ## [1] "cluster 10"
+
+![](kmeans_clustering_files/figure-gfm/unnamed-chunk-12-10.png)<!-- -->
+
+``` r
+results_both <- data.frame(index = 1:N, cluster = kmeans_both$cluster, label = label) %>% 
+  left_join(label_map)
+```
+
+    ## Joining, by = "label"
+
+``` r
+results_both %>% 
+  ggplot(aes(cluster, fill = group)) +
+    geom_bar(position="stack") + 
+    labs(title = 'Clustering with image and outline')
+```
+
+![](kmeans_clustering_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
+
+``` r
+results_both %>% 
+  ggplot(aes(cluster, fill = group2)) +
+    geom_bar(position="stack") + 
+    labs(title = 'Clustering with image and outline')
+```
+
+![](kmeans_clustering_files/figure-gfm/unnamed-chunk-13-2.png)<!-- -->
 
 Just outline
 
@@ -273,80 +347,5 @@ results_outline %>%
 ```
 
 ![](kmeans_clustering_files/figure-gfm/unnamed-chunk-11-2.png)<!-- -->
-
-Outline and picture
-
-``` r
-par(mfrow = ratio, mar = rep(0, 4))
-for (n in 1:centers) {
-  print(paste('cluster',n))
-  print_img(sample(index[kmeans_both$cluster == n],prod(ratio)))
-}
-```
-
-    ## [1] "cluster 1"
-
-![](kmeans_clustering_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
-
-    ## [1] "cluster 2"
-
-![](kmeans_clustering_files/figure-gfm/unnamed-chunk-12-2.png)<!-- -->
-
-    ## [1] "cluster 3"
-
-![](kmeans_clustering_files/figure-gfm/unnamed-chunk-12-3.png)<!-- -->
-
-    ## [1] "cluster 4"
-
-![](kmeans_clustering_files/figure-gfm/unnamed-chunk-12-4.png)<!-- -->
-
-    ## [1] "cluster 5"
-
-![](kmeans_clustering_files/figure-gfm/unnamed-chunk-12-5.png)<!-- -->
-
-    ## [1] "cluster 6"
-
-![](kmeans_clustering_files/figure-gfm/unnamed-chunk-12-6.png)<!-- -->
-
-    ## [1] "cluster 7"
-
-![](kmeans_clustering_files/figure-gfm/unnamed-chunk-12-7.png)<!-- -->
-
-    ## [1] "cluster 8"
-
-![](kmeans_clustering_files/figure-gfm/unnamed-chunk-12-8.png)<!-- -->
-
-    ## [1] "cluster 9"
-
-![](kmeans_clustering_files/figure-gfm/unnamed-chunk-12-9.png)<!-- -->
-
-    ## [1] "cluster 10"
-
-![](kmeans_clustering_files/figure-gfm/unnamed-chunk-12-10.png)<!-- -->
-
-``` r
-results_both <- data.frame(index = 1:N, cluster = kmeans_both$cluster, label = label) %>% 
-  left_join(label_map)
-```
-
-    ## Joining, by = "label"
-
-``` r
-results_both %>% 
-  ggplot(aes(cluster, fill = group)) +
-    geom_bar(position="stack") + 
-    labs(title = 'Clustering with image and outline')
-```
-
-![](kmeans_clustering_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
-
-``` r
-results_both %>% 
-  ggplot(aes(cluster, fill = group2)) +
-    geom_bar(position="stack") + 
-    labs(title = 'Clustering with image and outline')
-```
-
-![](kmeans_clustering_files/figure-gfm/unnamed-chunk-13-2.png)<!-- -->
 
 The outline did surprisingly with the larger categories here.
